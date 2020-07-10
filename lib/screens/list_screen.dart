@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:simple_app/constants.dart';
 import 'package:simple_app/main.dart';
-import 'package:simple_app/model/Product.dart';
 
 class ListScreen extends StatefulWidget {
   @override
@@ -10,15 +11,17 @@ class ListScreen extends StatefulWidget {
 }
 
 class _ListScreenState extends State<ListScreen> {
-  bool showSpinner = false;
-
-  //This variable will tell whether records were fetched or not
-  bool fetched = false;
-
-  var productList = new List<Product>();
-
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+
+  @override
+  void initState() {
+    super.initState();
+
+    Timer.periodic(Duration(seconds: 4), (timer) {
+      items.insert(0, 1);
+    });
+  }
 
   _onRefresh() async {
     await Future.delayed(Duration(seconds: 3));
@@ -28,45 +31,49 @@ class _ListScreenState extends State<ListScreen> {
     //_refreshController.refreshFailed();
   }
 
-  int itemCount = 5;
-  int count = 0;
+  List<int> items = [1, 2, 3, 4, 5];
+
+//  int itemCount = 5;
+//  int count = 0;
 
   _onLoading() async {
     await Future.delayed(Duration(seconds: 3));
 
-    count += 1;
-
-    if (count == 3) {
-      _refreshController.loadNoData();
-    } else {
-      setState(() {
-        itemCount += 2;
-      });
-      _refreshController.loadComplete();
-    }
+    setState(() {
+      items.addAll([1, 2, 3]);
+//        itemCount += 3;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: kOrange),
-      body: SmartRefresher(
-        enablePullUp: true,
-        onLoading: _onLoading,
-        controller: _refreshController,
-        child: ListView.separated(
-          separatorBuilder: (context, index) {
-            return Divider(color: Colors.black);
-          },
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            return Container(
-              color: kLighterGray,
-              height: 150,
-              margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            );
-          },
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(backgroundColor: kOrange),
+        body: SmartRefresher(
+          enablePullUp: true,
+          onLoading: _onLoading,
+          controller: _refreshController,
+          child: ListView.separated(
+            separatorBuilder: (context, index) {
+              return Divider(color: Colors.black);
+            },
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return Container(
+                color: kLighterGray,
+                height: 150,
+                margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                child: Center(
+                  child: Text(
+                    items[index].toString(),
+                    style: TextStyle(fontSize: 26, color: Colors.white),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
